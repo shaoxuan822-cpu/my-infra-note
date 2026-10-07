@@ -1,0 +1,8 @@
+# Netlify 部署配置（优先级高于网页端的 Build settings）
+# 构建命令与发布目录写在这里，任何部署方式都会使用这份配置
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
