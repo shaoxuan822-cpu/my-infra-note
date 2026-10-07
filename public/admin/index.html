@@ -10,19 +10,19 @@
       正在加载编辑器，请稍候…
     </div>
     <script>
-      // 依次尝试多个加载源：国内镜像 → jsDelivr → unpkg → 站内本地文件
+      // Sveltia CMS（Decap 的活跃维护替代品），依次尝试多个加载源：
+      // jsDelivr → unpkg → 站内本地文件；加载成功后自动读取同目录 config.yml 初始化
       var sources = [
-        "https://registry.npmmirror.com/decap-cms/3.16.3/files/dist/decap-cms.js",
-        "https://cdn.jsdelivr.net/npm/decap-cms@3.16.3/dist/decap-cms.js",
-        "https://unpkg.com/decap-cms@3.16.3/dist/decap-cms.js",
-        "./decap-cms.js"
+        "https://cdn.jsdelivr.net/npm/@sveltia/cms/dist/sveltia-cms.js",
+        "https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js",
+        "./sveltia-cms.js"
       ];
 
       function showFail() {
         document.body.innerHTML =
           '<div style="font-family:sans-serif;max-width:560px;margin:80px auto;padding:0 20px;line-height:1.8">' +
           '<h2>后台脚本加载失败</h2>' +
-          '<p>四个加载源（国内镜像、jsDelivr、unpkg、站内本地文件）都未能加载成功。</p>' +
+          '<p>三个加载源（jsDelivr、unpkg、站内本地文件）都未能加载成功。</p>' +
           '<p>请检查网络后 <a href="javascript:location.reload()">刷新重试</a>，或使用代理访问。</p></div>';
       }
 
@@ -36,11 +36,7 @@
           settled = true;
           var el = document.getElementById("loading");
           if (el) el.remove();
-          if (window.CMS) {
-            CMS.init(); // 自动加载同目录下的 config.yml
-          } else {
-            tryLoad(i + 1);
-          }
+          // Sveltia CMS 脚本加载后会自动初始化
         };
         s.onerror = function () {
           if (settled) return;

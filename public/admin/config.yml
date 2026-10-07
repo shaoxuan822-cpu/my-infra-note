@@ -13,8 +13,6 @@ backend:
 media_folder: "public/images"
 public_folder: "/images"
 
-locale: "zh_Hans"
-
 collections:
   - name: notes
     label: 笔记
