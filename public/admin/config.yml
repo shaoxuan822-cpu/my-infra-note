@@ -6,7 +6,7 @@
 
 backend:
   name: github
-  repo: yourname/your-repo   # TODO: 改成你的仓库
+  repo: shaoxuan822-cpu/my-infra-note
   branch: main
 
 # 上传的图片存放在 public/images，正文中自动以 /images/xxx.png 引用
