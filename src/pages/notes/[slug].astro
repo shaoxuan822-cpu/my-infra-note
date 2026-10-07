@@ -1,0 +1,93 @@
+---
+import Layout from "../../layouts/Base.astro";
+import { CATEGORY_NAME, STATUS_CLASS, noteSlug } from "../../lib/notes";
+import type { NoteFrontmatter } from "../../lib/notes";
+
+export async function getStaticPaths() {
+  const files = import.meta.glob("../../content/notes/*.md");
+  return Object.keys(files).map((path) => ({ params: { slug: noteSlug(path) } }));
+}
+
+const { slug } = Astro.params;
+
+const modules = import.meta.glob("../../content/notes/*.md", { eager: true }) as Record<string, any>;
+const entry = modules[`../../content/notes/${slug}.md`];
+
+let fm: NoteFrontmatter | null = null;
+let Content: any = null;
+if (entry) {
+  fm = entry.frontmatter as NoteFrontmatter;
+  Content = entry.default;
+}
+
+const allNotes = Object.entries(modules)
+  .map(([path, m]) => ({ ...(m.frontmatter as NoteFrontmatter), slug: noteSlug(path) }))
+  .sort((a, b) => (a.date < b.date ? 1 : -1));
+const idx = fm ? allNotes.findIndex((n) => n.slug === slug) : -1;
+const prev = idx >= 0 && idx < allNotes.length - 1 ? allNotes[idx + 1] : null;
+const next = idx > 0 ? allNotes[idx - 1] : null;
+
+const catName = fm ? CATEGORY_NAME[fm.category] ?? fm.category : "";
+const statusClass = fm ? STATUS_CLASS[fm.status] ?? "planned" : "planned";
+const tagList = fm && Array.isArray(fm.tags) ? fm.tags : [];
+---
+
+<Layout title={`${fm?.title ?? "笔记"} · AI Infra Notes`} description={fm?.excerpt}>
+  {fm && Content ? (
+    <article class="article">
+      <div class="container">
+        <div class="article-layout">
+          <div class="article-body">
+            <nav class="breadcrumb">
+              <a href="/">首页</a> / <a href="/notes/">笔记</a> / <span>{fm.title}</span>
+            </nav>
+
+            <header class="article-head">
+              <div class="article-tags">
+                <span class="tag">{catName}</span>
+                <span class={`status status-${statusClass}`}>{fm.status}</span>
+              </div>
+              <h1>{fm.title}</h1>
+              <p class="article-meta">
+                <span>{fm.date}</span><span>·</span>
+                {tagList.map((t) => <span class="mini-tag">#{t}</span>)}
+              </p>
+            </header>
+
+            <Content />
+
+            <nav class="post-nav">
+              {prev ? <a href={`/notes/${prev.slug}/`}>← {prev.title}</a> : <a href="/notes/">← 返回笔记列表</a>}
+              {next ? <a href={`/notes/${next.slug}/`}>{next.title} →</a> : <span />}
+            </nav>
+          </div>
+
+          <aside class="toc">
+            <h4>本文目录</h4>
+            <div id="toc-list"></div>
+          </aside>
+        </div>
+      </div>
+    </article>
+  ) : (
+    <section class="section">
+      <div class="container">
+        <h1>未找到这篇笔记</h1>
+        <p><a href="/notes/">← 返回笔记列表</a></p>
+      </div>
+    </section>
+  )}
+</Layout>
+
+<script>
+  // 自动生成目录：给 h2 加 id 并列出链接
+  const headings = document.querySelectorAll(".article-body h2");
+  const toc = document.getElementById("toc-list");
+  headings.forEach((h, i) => {
+    if (!h.id) h.id = "sec-" + i;
+    const a = document.createElement("a");
+    a.href = "#" + h.id;
+    a.textContent = h.textContent;
+    toc.appendChild(a);
+  });
+</script>

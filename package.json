@@ -1,0 +1,15 @@
+{
+  "name": "ai-infra-notes",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "个人主页 + AI 基础设施学习笔记归档（Astro + Decap CMS）",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^5.7.0"
+  }
+}

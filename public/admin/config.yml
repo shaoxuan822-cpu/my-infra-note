@@ -1,0 +1,34 @@
+# ============================================
+# Decap CMS 配置
+# 使用前：把 backend.repo 改成你自己的 GitHub 仓库（如 yourname/ai-infra-notes）
+# 完整上线步骤见项目 README「启用 /admin/ 后台」一节
+# ============================================
+
+backend:
+  name: github
+  repo: yourname/your-repo   # TODO: 改成你的仓库
+  branch: main
+
+# 上传的图片存放在 public/images，正文中自动以 /images/xxx.png 引用
+media_folder: "public/images"
+public_folder: "/images"
+
+locale: "zh_Hans"
+
+collections:
+  - name: notes
+    label: 笔记
+    label_singular: 笔记
+    folder: src/content/notes
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{date}} · {{title}}"
+    fields:
+      - { label: "标题", name: "title", widget: "string" }
+      - { label: "发布日期", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, format: "YYYY-MM-DD" }
+      - { label: "分类", name: "category", widget: "select", options: ["gpu", "dist", "infer", "net", "cluster", "storage"], default: "gpu" }
+      - { label: "标签", name: "tags", widget: "list", required: false, default: [] }
+      - { label: "摘要", name: "excerpt", widget: "text", required: false }
+      - { label: "状态", name: "status", widget: "select", options: ["已发布", "写作中", "计划中"], default: "已发布" }
+      - { label: "设为精选", name: "featured", widget: "boolean", default: false }
+      - { label: "正文", name: "body", widget: "markdown" }

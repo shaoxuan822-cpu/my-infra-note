@@ -1,0 +1,96 @@
+---
+import Layout from "../layouts/Base.astro";
+import NoteCard from "../components/NoteCard.astro";
+import { CATEGORIES, noteSlug } from "../lib/notes";
+import type { NoteFrontmatter } from "../lib/notes";
+
+const modules = import.meta.glob("../content/notes/*.md", { eager: true }) as Record<string, any>;
+
+const notes = Object.entries(modules)
+  .map(([path, m]) => ({ ...(m.frontmatter as NoteFrontmatter), slug: noteSlug(path) }))
+  .sort((a, b) => (a.date < b.date ? 1 : -1));
+
+const featured = notes.filter((n) => n.featured).slice(0, 3);
+const latestDate = notes[0]?.date ?? "—";
+---
+
+<Layout
+  title="AI Infra Notes · 个人主页与学习笔记归档"
+  description="AI 基础设施学习笔记归档：GPU/CUDA、分布式训练、推理优化、网络通信与集群调度。"
+>
+  <!-- ======= Hero ======= -->
+  <section class="hero">
+    <div class="container">
+      <p class="hero-badge">⚡ AI 基础设施 · 学习笔记归档 · 个人主页</p>
+      <h1>把学过的 <span class="grad-text">AI Infra</span><br />真正沉淀下来</h1>
+      <p class="hero-sub">
+        你好，欢迎来到我的数字花园 —— 一名 <strong>AI 基础设施方向工程师</strong> 的个人网站。
+        这里归档了我在 GPU/CUDA、分布式训练、推理优化、网络通信与集群调度上的学习笔记，
+        按主题整理、可搜索、持续更新。
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/notes/">浏览全部笔记 →</a>
+        <a class="btn btn-ghost" href="#about">关于我</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><b>{notes.length}</b><span>篇笔记</span></div>
+        <div class="stat"><b>{CATEGORIES.length}</b><span>个主题</span></div>
+        <div class="stat"><b>{latestDate}</b><span>最近更新</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= 精选笔记 ======= -->
+  <section class="section" id="featured">
+    <div class="container">
+      <div class="section-head">
+        <h2>✨ 精选笔记</h2>
+        <a class="more-link" href="/notes/">全部笔记 →</a>
+      </div>
+      <div class="note-grid">
+        {featured.map((n) => <NoteCard {...n} url={`/notes/${n.slug}/`} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= 按主题浏览 ======= -->
+  <section class="section" id="categories">
+    <div class="container">
+      <div class="section-head"><h2>🗂 按主题浏览</h2></div>
+      <div class="category-grid">
+        {CATEGORIES.map((c) => {
+          const count = notes.filter((n) => n.category === c.key).length;
+          return (
+            <a class="category-card" href={`/notes/?cat=${c.key}`}>
+              <h3>{c.name}</h3>
+              <p>{c.desc}</p>
+              <span class="count">{count} 篇</span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= 关于 ======= -->
+  <section class="section about" id="about">
+    <div class="container about-inner">
+      <h2>👋 关于我</h2>
+      <p>
+        [这里换成你的自我介绍] 我目前专注于 GPU 编程、分布式训练与推理优化。
+        本职工作之外，我习惯把学习过程写成笔记公开发布——写作是最好的费曼学习法，
+        也顺便让同路人少走弯路。
+      </p>
+      <p>
+        这个网站的运作方式很简单：笔记以 Markdown 撰写 → 提交到 Git 仓库 →
+        托管平台自动构建上线。没有服务器要维护，也没有数据库要备份。
+        上线后甚至可以直接在 <a href="/admin/">/admin/ 后台</a>里编辑笔记、上传图片。
+      </p>
+      <div class="about-links">
+        <a class="btn btn-ghost" href="https://github.com/yourname" target="_blank" rel="noopener">GitHub ↗</a>
+        <a class="btn btn-ghost" href="mailto:you@example.com">Email</a>
+        <a class="btn btn-ghost" href="#">RSS</a>
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,35 @@
+---
+import { CATEGORY_NAME, STATUS_CLASS } from "../lib/notes";
+
+interface Props {
+  title: string;
+  date: string;
+  category: string;
+  tags: string[];
+  excerpt: string;
+  status: string;
+  url: string;
+}
+
+const { title, date, category, tags, excerpt, status, url } = Astro.props;
+const catName = CATEGORY_NAME[category] ?? category;
+const statusClass = STATUS_CLASS[status] ?? "planned";
+const tagList = Array.isArray(tags) ? tags : [];
+// 供搜索过滤使用的小写索引
+const haystack = `${title} ${excerpt} ${catName} ${tagList.join(" ")}`.toLowerCase();
+---
+
+<a class="note-card" href={url} data-cat={category} data-search={haystack}>
+  <div class="note-card-top">
+    <span class="tag">{catName}</span>
+    <span class={`status status-${statusClass}`}>{status}</span>
+  </div>
+  <h3>{title}</h3>
+  <p class="note-card-excerpt">{excerpt}</p>
+  <div class="note-card-meta">
+    <span>{date}</span><span>·</span><span>{catName}</span>
+  </div>
+  <div class="note-card-tags">
+    {tagList.map((t) => <span class="mini-tag">#{t}</span>)}
+  </div>
+</a>

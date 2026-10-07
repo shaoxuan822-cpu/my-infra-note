@@ -1,0 +1,90 @@
+---
+import Layout from "../../layouts/Base.astro";
+import NoteCard from "../../components/NoteCard.astro";
+import { CATEGORIES, noteSlug } from "../../lib/notes";
+import type { NoteFrontmatter } from "../../lib/notes";
+
+const modules = import.meta.glob("../../content/notes/*.md", { eager: true }) as Record<string, any>;
+
+const notes = Object.entries(modules)
+  .map(([path, m]) => ({ ...(m.frontmatter as NoteFrontmatter), slug: noteSlug(path) }))
+  .sort((a, b) => (a.date < b.date ? 1 : -1));
+---
+
+<Layout title="全部笔记 · AI Infra Notes" description="AI 基础设施学习笔记全集，支持搜索与按主题筛选。">
+  <section class="page-head">
+    <div class="container">
+      <h1>全部笔记</h1>
+      <p class="page-head-sub">
+        共 {notes.length} 篇，覆盖 {CATEGORIES.length} 个主题。
+        上线后可以在 <a href="/admin/">/admin/ 后台</a>直接编辑笔记、插入图片。
+      </p>
+    </div>
+  </section>
+
+  <section class="section notes-main">
+    <div class="container">
+      <div class="notes-toolbar">
+        <input class="search-input" id="search" type="search" placeholder="🔍 搜索标题、标签、内容…" />
+        <div class="chips" id="chips">
+          <button class="chip active" data-cat="all">全部</button>
+          {CATEGORIES.map((c) => <button class="chip" data-cat={c.key}>{c.name}</button>)}
+        </div>
+      </div>
+      <div class="note-grid note-grid-2" id="note-list">
+        {notes.map((n) => <NoteCard {...n} url={`/notes/${n.slug}/`} />)}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const cards = Array.from(document.querySelectorAll(".note-card"));
+  const chipsEl = document.getElementById("chips");
+  const searchEl = document.getElementById("search");
+  let activeCat = new URLSearchParams(location.search).get("cat") || "all";
+
+  function apply() {
+    const q = (searchEl.value || "").trim().toLowerCase();
+    let visible = 0;
+    cards.forEach((card) => {
+      const matchCat = activeCat === "all" || card.dataset.cat === activeCat;
+      const matchQ = !q || (card.dataset.search || "").includes(q);
+      const show = matchCat && matchQ;
+      card.style.display = show ? "" : "none";
+      if (show) visible += 1;
+    });
+    let empty = document.getElementById("empty-msg");
+    if (visible === 0) {
+      if (!empty) {
+        empty = document.createElement("div");
+        empty.id = "empty-msg";
+        empty.className = "empty";
+        empty.textContent = "没有找到匹配的笔记，换个关键词试试 🔍";
+        document.getElementById("note-list").appendChild(empty);
+      }
+    } else if (empty) {
+      empty.remove();
+    }
+  }
+
+  chipsEl.addEventListener("click", (e) => {
+    const btn = e.target.closest(".chip");
+    if (!btn) return;
+    activeCat = btn.dataset.cat || "all";
+    chipsEl.querySelectorAll(".chip").forEach((c) => c.classList.toggle("active", c === btn));
+    apply();
+  });
+
+  searchEl.addEventListener("input", apply);
+
+  // 从首页分类卡片跳转过来时（?cat=xxx），高亮对应分类
+  if (activeCat !== "all") {
+    const btn = chipsEl.querySelector(`[data-cat="${activeCat}"]`);
+    if (btn) {
+      chipsEl.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+      btn.classList.add("active");
+    }
+  }
+  apply();
+</script>

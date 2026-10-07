@@ -1,0 +1,6 @@
+# pnpm 设置
+# nodeLinker: hoisted —— 使用平铺安装（类似 npm），避免沙箱环境下虚拟仓库链接不完整
+nodeLinker: hoisted
+allowBuilds:
+  esbuild: false
+  sharp: false
