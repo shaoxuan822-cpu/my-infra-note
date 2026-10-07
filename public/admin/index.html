@@ -4,21 +4,53 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>内容管理 · AI Infra Notes</title>
-    <script src="https://unpkg.com/decap-cms@3.16.3/dist/decap-cms.js"></script>
   </head>
   <body>
+    <div id="loading" style="font-family:sans-serif;max-width:560px;margin:80px auto;padding:0 20px;color:#666">
+      正在加载编辑器，请稍候…
+    </div>
     <script>
-      if (window.CMS) {
-        // 自动加载同目录下的 config.yml
-        CMS.init();
-      } else {
+      // 依次尝试多个加载源：国内镜像 → jsDelivr → unpkg → 站内本地文件
+      var sources = [
+        "https://registry.npmmirror.com/decap-cms/3.16.3/files/dist/decap-cms.js",
+        "https://cdn.jsdelivr.net/npm/decap-cms@3.16.3/dist/decap-cms.js",
+        "https://unpkg.com/decap-cms@3.16.3/dist/decap-cms.js",
+        "./decap-cms.js"
+      ];
+
+      function showFail() {
         document.body.innerHTML =
           '<div style="font-family:sans-serif;max-width:560px;margin:80px auto;padding:0 20px;line-height:1.8">' +
           '<h2>后台脚本加载失败</h2>' +
-          '<p>可能是网络原因导致脚本（unpkg.com）没有加载成功。</p>' +
-          '<p>请先 <a href="javascript:location.reload()">刷新重试</a>；' +
-          '如果反复出现，请检查网络能否访问 unpkg.com，或使用代理后重试。</p></div>';
+          '<p>四个加载源（国内镜像、jsDelivr、unpkg、站内本地文件）都未能加载成功。</p>' +
+          '<p>请检查网络后 <a href="javascript:location.reload()">刷新重试</a>，或使用代理访问。</p></div>';
       }
+
+      function tryLoad(i) {
+        if (i >= sources.length) { showFail(); return; }
+        var s = document.createElement("script");
+        s.src = sources[i];
+        var settled = false;
+        s.onload = function () {
+          if (settled) return;
+          settled = true;
+          var el = document.getElementById("loading");
+          if (el) el.remove();
+          if (window.CMS) {
+            CMS.init(); // 自动加载同目录下的 config.yml
+          } else {
+            tryLoad(i + 1);
+          }
+        };
+        s.onerror = function () {
+          if (settled) return;
+          settled = true;
+          tryLoad(i + 1);
+        };
+        document.head.appendChild(s);
+      }
+
+      tryLoad(0);
     </script>
   </body>
 </html>
